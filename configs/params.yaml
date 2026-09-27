@@ -1,0 +1,60 @@
+seed: 42
+
+detector:
+  weights: weights/yolov8s.pt
+  imgsz: 960          # use 640 on CPU for speed
+  conf: 0.25
+  stride: 2           # process every Nth frame (Part A)
+  device: null        # null = auto (CUDA, else Apple MPS, else CPU)
+  tracker: bytetrack.yaml
+  light: {min_sat: 80, min_val: 60, min_frac: 0.005}   # HSV thresholds for the lit lamp in light_box
+
+# Only enable classes you have verified on your dev labels.
+# A class you predict that never occurs in the test set scores 0 and drags the macro F1 down.
+classes_enabled:
+  - stopped_vehicle
+  - congestion
+  - wrong_way
+  - jaywalking
+  - red_light
+  - stop_line
+  - failure_to_yield
+  - solid_line_crossing
+  - illegal_u_turn
+  - accident
+
+min_track_points: 5     # ignore tracks shorter than this (noise)
+light_min_phase_s: 5.0  # signal phases shorter than this are flicker (occlusion, reflections)
+
+# Speeds are "relative": box heights per second (roughly perspective-independent).
+rules:
+  stopped_vehicle: {max_rspeed: 0.15, min_duration: 10.0, max_gap: 1.0}
+  congestion:      {max_rspeed: 0.35, min_vehicles: 4, min_duration: 40.0, bin_s: 1.0, max_gap: 3.0}
+  wrong_way:       {min_rspeed: 0.5, max_cos: -0.5, min_duration: 1.0, max_gap: 0.6}
+  jaywalking:      {min_duration: 1.0, max_gap: 0.8, crosswalk_margin_px: 10}
+  red_light:       {}
+  stop_line:       {max_rspeed: 0.15, min_stop: 1.0}
+  failure_to_yield: {max_gap: 0.5}
+  solid_line_crossing: {pre_s: 0.2, post_s: 1.2, min_rspeed: 0.3}
+  illegal_u_turn:  {min_turn_deg: 150, start_deg: 20, min_rspeed: 0.3}
+  accident:        {min_iou: 0.15, max_depth_ratio: 0.35, min_rspeed_before: 0.8, min_closing_rspeed: 0.5,
+                    stop_rspeed: 0.15, max_stop_delay: 3.0, min_still_s: 5.0, border_frac: 0.03}
+
+postprocess:
+  default: {merge_gap: 1.0, min_len: 0.8}
+  stopped_vehicle: {merge_gap: 3.0, min_len: 10.0}
+  congestion: {merge_gap: 10.0, min_len: 30.0}
+  jaywalking: {merge_gap: 1.5, min_len: 1.0}
+
+# Part B. Calibrated on normal traffic in C3896 (no accident): old values (radius 0.6, depth 1, tau 2,
+# ema 0.5) had risk >= 0.5 on 15% of frames / 47 alarms; these give 0.8% / 8 alarms.
+risk:
+  stride: 3
+  imgsz: 640
+  horizon: 5.0
+  history_s: 1.0
+  min_rel_speed: 0.3      # box heights / s
+  collision_radius: 0.4   # x mean box height
+  depth_weight: 3.0       # vertical image distance counts 3x (it is depth in this view)
+  tau: 1.0                # score decay with time-to-collision
+  ema: 0.3

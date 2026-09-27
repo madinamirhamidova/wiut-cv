@@ -1,0 +1,10 @@
+# Pinned so the organizers' run matches ours. This set installs on Python 3.10 - 3.13.
+ultralytics==8.4.118
+torch==2.14.0
+torchvision==0.29.0
+lap==0.5.13
+opencv-python==5.0.0.93
+numpy==2.2.6
+pandas==2.3.3
+pyyaml==6.0.3
+matplotlib==3.10.9

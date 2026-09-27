@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+cache/
+outputs/
+data/samples/*.mp4
+data/samples/*.MP4
+data/samples/*.part
+weights/*.pt
+app/assets/
+/predictions.json

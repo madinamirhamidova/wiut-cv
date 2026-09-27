@@ -1,0 +1,3 @@
+{
+  "accident_false_alarms.jpg": "Accident false alarms from the first rule (each pair: contact, then +1.5 s). Cars passing in dense traffic, articulated buses detected as two buses, oversized boxes. None is a crash. Fixed with closing-speed, standstill and queue checks: 37 -> 1 per clip."
+}
